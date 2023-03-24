@@ -17,6 +17,54 @@ service cloud.firestore {
     }
 
     // Add new rules here
-   
+    
+    //1.Any authenticated user may create to-do items for themselves.
+    
+    match /todos/{id} {
+      allow create: if (isSignedIn());
+    }
+
+    //2.Users can view, update and delete their own to-do items.
+    
+    match /todos/{id} {
+      allow read, update, delete: if (isSignedIn() && isOwned());
+    }
+
+    //3.Any authenticated user may create a profile and view other users' profiles.
+    
+    match /users/{uid} {
+      allow read, create: if (isSignedIn());
+    }
+
+    //4. Any authenticated user is allowed to edit their own profile.
+    
+    match /users/{uid} {
+      allow update: if (isSignedIn() && isOwned());
+    }
+
+    //5. Admin users can edit any user's profile.
+    
+    match /users/{uid} {
+      allow update: if isAdmin();
+    }
+
+    //6.Only the admin users can make other users admins.
+    
+    match /users/{uid} {
+      allow create: if isAdmin();
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwned() {
+      return resource.data.uid == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin;
+    }
   }
 }
