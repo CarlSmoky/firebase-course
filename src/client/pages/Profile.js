@@ -26,8 +26,6 @@ const Profile = () => {
   // Check if current user is an admin
   const [adminMode, setAdminMode] = useState(false);
 
-  const [isAdminProfile, setIsAdminProfile] = useState(false);
-
   useEffect(() => {
     if (user) {
       db.collection(USERS)
@@ -37,15 +35,9 @@ const Profile = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (userDoc) {
-      setIsAdminProfile(userDoc.isAdmin);
-    }
-  }, [userDoc]);
-
   const handleSubmit = (event) => {
     event.preventDefault();
-    return updateUser(userDoc.uid, { isAdmin: !isAdminProfile });
+    return updateUser(userDoc.uid, { isAdmin: true });
   };
 
   return (
@@ -70,26 +62,32 @@ const Profile = () => {
         )}
       </LoadingError>
 
-      <Card>
-        <div className="sm:col-span-6">
-          <label htmlFor="isAdmin" className="block text-sm font-medium text-gray-700">
-            Role
-          </label>
-          <p className="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 rounded-md sm:text-sm border-gray-300">{userDoc && isAdminProfile ? 'Admin' : 'User'}</p>
-          {userDoc && adminMode && !isAdminProfile && (
-            <div className="pt- 5 flex justify-end">
-              <button
-                type="submit"
-                className="ml-3 inline-flex   justify-center py-2 px-4 border   border-transparent shadow-sm  text-sm font-medium rounded-md   text-white bg-indigo-600  hover:bg-indigo-700  focus:outline-none focus:ring-2  focus:ring-offset-2  focus:ring-indigo-500"
-                onClick={handleSubmit}
-              >
-                Grant Admin Access
-              </button>
+      <LoadingError data={userDoc} loading={loading} error={error}>
+        {userDoc && (
+          <Card>
+            <div className="sm:col-span-6">
+              <p className="block text-sm font-medium text-gray-700">
+                Role
+              </p>
+              <p className="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 rounded-md sm:text-sm border-gray-300 text-gray-500">
+                {userDoc.isAdmin ? 'Admin' : 'User'}
+              </p>
+              {!userDoc.isAdmin &&  adminMode && (
+                <div className="pt- 5 flex justify-end">
+                  <button
+                    type="submit"
+                    className="ml-3 inline-flex   justify-center py-2 px-4 border   border-transparent shadow-sm  text-sm font-medium rounded-md   text-white bg-indigo-600  hover:bg-indigo-700  focus:outline-none focus:ring-2  focus:ring-offset-2  focus:ring-indigo-500"
+                    onClick={handleSubmit}
+                  >
+                    Grant Admin Access
+                  </button>
+                </div>
+              )}
             </div>
-          )
-          }
-        </div>
-      </Card>
+          </Card>
+        )}
+      </LoadingError>
+
     </main>
   );
 };
