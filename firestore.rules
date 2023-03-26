@@ -37,21 +37,17 @@ service cloud.firestore {
     }
 
     //4. Any authenticated user is allowed to edit their own profile.
+    // Issue: owner can make admin yourself
     
     match /users/{uid} {
-      allow update: if (isSignedIn() && isOwned());
+      allow update: if (isSignedIn() && isOwned() && request.resource.data.isAdmin == resource.data.isAdmin);
     }
 
-    //5. Admin users can edit any user's profile.
+     //5. Admin users can edit any user's profile.
+     //6.Only the admin users can make other users admins.
     
     match /users/{uid} {
       allow update: if isAdmin();
-    }
-
-    //6.Only the admin users can make other users admins.
-    
-    match /users/{uid} {
-      allow create: if isAdmin();
     }
 
     // Helpers
